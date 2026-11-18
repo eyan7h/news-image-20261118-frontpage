@@ -32,8 +32,10 @@ def main() -> None:
     # copyfile writes identical bytes on every run; no timestamps, no RNG.
     with src.open("rb") as fsrc, OUT.open("wb") as fdst:
         shutil.copyfileobj(fsrc, fdst)
-    if OUT.stat().st_size == 0:
-        raise RuntimeError("wrote an empty entry.png")
+    # Guard the gate: the image must be a whole, non-empty PNG under 1 MiB.
+    size = OUT.stat().st_size
+    if size == 0 or size > 1048576:
+        raise RuntimeError(f"entry.png has invalid size: {size} bytes")
 
 
 if __name__ == "__main__":
